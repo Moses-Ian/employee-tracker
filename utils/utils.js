@@ -4,7 +4,11 @@ const validate = action => {
 		return false;
 	switch (action[0]) {
 		case 'view':
-			if (!action[1] || action[1] != 'all')
+			if (!action[1])
+				return false;
+			if (action[1] === 'department' || action[1] === 'manager' || action[1] === 'budget')
+				return true;
+			if (action[1] != 'all')
 				return false;
 			if (!action[2])
 				return false;

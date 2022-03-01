@@ -81,6 +81,13 @@ let chooseEmployeeQuestion = [{
 		choices: []
 }];
 
+let chooseDepartmentQuestion = [{
+		type: 'list',
+		name: 'department',
+		message: "Which department?",
+		choices: []
+}];
+
 let updateRoleQuestion = [
 	{
 		type: 'number',
@@ -107,7 +114,45 @@ let updateManagerQuestion = [
 	}
 ];
 	
-	
+//functions
+const promptUser = () => {
+  return inquirer.prompt(actionQuestion);
+}
+
+const addQuery = (sql) => {
+	db.promise().query(sql)
+	.then(result => console.log("Query OK"))
+	// .catch(err => console.log("Query didn't work (you know what you did)."))
+	.catch(err => console.log(err))
+	.then(db.end());
+}
+
+const getQuery = (sql) => {
+	db.promise().query(sql)
+		.then(results => console.table(results[0]))
+		.catch(err => console.log(err))
+		.then(db.end());
+}
+
+const getEmployeeNames = () => {
+	sql = `select first_name, last_name from employees;`;
+	return db.promise().query(sql)
+	.then(results => {
+		const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
+		chooseEmployeeQuestion[0].choices = names;
+	});
+}
+
+const getDepartmentNames = () => {
+	sql = `select name from departments;`;
+	return db.promise().query(sql)
+	.then(results => {
+		const names = results[0];
+		chooseDepartmentQuestion[0].choices = names;
+	});
+}
+
+//body
 
 //returns a promise
 console.log(`You can:
@@ -126,27 +171,6 @@ delete department
 delete role
 delete employee`);
 
-const promptUser = () => {
-  return inquirer.prompt(actionQuestion);
-}
-
-const addQuery = (sql) => {
-	db.promise().query(sql)
-	.then(result => console.log("Query OK"))
-	// .catch(err => console.log("Query didn't work (you know what you did)."))
-	.catch(err => console.log(err))
-	.then(db.end());
-}
-
-const getEmployeeNames = () => {
-	sql = `select first_name, last_name from employees;`;
-	return db.promise().query(sql)
-	.then(results => {
-		const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
-		chooseEmployeeQuestion[0].choices = names;
-	});
-}
-
 promptUser()	// returns a promise
 	.then(answers => {
 		let { action } = answers;
@@ -155,22 +179,44 @@ promptUser()	// returns a promise
 			return;
 		switch(action[0]) {
 			case 'view':
-				let sql = `select * from ${action[2]};`;
-				if (action[2] === 'employees') 
-					sql = `select e.id, e.first_name, e.last_name,
-						r.title, r.salary,
-						d.name as department,
-						em.last_name as manager
-						from employees e
-						left join roles r
-						on e.role_id = r.id
-						left join departments d
-						on r.department_id = d.id
-						left join employees em
-						on e.manager_id = em.id;`;
-				db.promise().query(sql)
-				.then(results => console.table(results[0]))
-				.then(db.end());	//rows = results[0]
+				switch (action[1]) {
+					case 'all':
+						let sql = `select * from ${action[2]};`;
+						if (action[2] === 'employees') 
+							sql = `select e.id, e.first_name, e.last_name,
+								r.title, r.salary,
+								d.name as department,
+								em.last_name as manager
+								from employees e
+								left join roles r
+								on e.role_id = r.id
+								left join departments d
+								on r.department_id = d.id
+								left join employees em
+								on e.manager_id = em.id;`;
+						getQuery(sql);
+						break;
+					case 'department':
+						getDepartmentNames()
+							.then(() => inquirer.prompt(chooseDepartmentQuestion))
+							.then(answers => {
+								let sql = `select employees.id, employees.first_name, employees.last_name, roles.title
+									from departments
+									inner join roles 
+									on departments.id = roles.department_id
+									inner join employees
+									on roles.id = employees.role_id
+									where departments.name = 'Engineering';`;
+								getQuery(sql);
+							});
+						break;
+					case 'manager':
+						
+						break;
+					case 'budget':
+					
+						break;
+				}
 				break;
 			case 'add':
 				//do something

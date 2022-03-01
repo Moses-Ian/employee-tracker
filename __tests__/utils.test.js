@@ -17,8 +17,23 @@ describe('validate', () => {
 			expect(validate(str)).toBe(true);
 		});
 		
-		test('view', () => {
-			const str = 'view'.trim().toLowerCase().split(' ');
+		test('view department', () => {
+			const str = 'view department'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+		
+		test('view manager', () => {
+			const str = 'view manager'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+		
+		test('view budget', () => {
+			const str = 'view budget'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+		
+		test('view departments', () => {
+			const str = 'view departments'.trim().toLowerCase().split(' ');
 			expect(validate(str)).toBe(false);
 		});
 		
@@ -27,8 +42,8 @@ describe('validate', () => {
 			expect(validate(str)).toBe(false);
 		});
 		
-		test('view departments', () => {
-			const str = 'view departments'.trim().toLowerCase().split(' ');
+		test('view', () => {
+			const str = 'view'.trim().toLowerCase().split(' ');
 			expect(validate(str)).toBe(false);
 		});
 		
