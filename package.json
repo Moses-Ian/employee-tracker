@@ -12,7 +12,8 @@
     "jest": "^27.5.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+	"start": "node index"
   },
   "repository": {
     "type": "git",
