@@ -43,6 +43,36 @@ const addRoleQuestions = [
 		}
 	}
 ];
+
+const addEmployeeQuestions = [
+	{
+		type: 'input',
+		name: 'first',
+		message: "What is the new employee's first name?"
+	}, {
+		type: 'input',
+		name: 'last',
+		message: 'Last name?'
+	}, {
+		type: 'number',
+		name: 'role',
+		message: 'Role ID?',
+		validate: input => {
+			if (isNaN(input)) 
+				return 'Role ID must be a number!';
+			return true;
+		}
+	}, {
+		type: 'number',
+		name: 'manager',
+		message: 'Manager ID?',
+		validate: input => {
+			if (isNaN(input)) 
+				return 'Manager ID must be a number!';
+			return true;
+		}
+	}
+];
 	
 
 //returns a promise
@@ -61,10 +91,8 @@ const promptUser = () => {
 
 const addQuery = (sql) => {
 	db.promise().query(sql)
-	.then((result, err) => {
-		if (!err)
-			console.log("Query OK")
-	})
+	.then(result => console.log("Query OK"))
+	.catch(err => console.log("Query didn't work (you know what you did)."))
 	.then(db.end());
 }
 
@@ -90,8 +118,8 @@ promptUser()	// returns a promise
 						left join employees em
 						on e.manager_id = em.id;`;
 				db.promise().query(sql)
-				.then(results => console.table(results[0]))	//rows = results[0]
-				.then(() => db.end());
+				.then(results => console.table(results[0]))
+				.then(db.end());	//rows = results[0]
 				break;
 			case 'add':
 				//do something
@@ -113,6 +141,15 @@ promptUser()	// returns a promise
 								addQuery(sql);
 							});
 						break;
+					case 'employee':
+						inquirer.prompt(addEmployeeQuestions)
+							.then(answers => {
+								let {first, last, role, manager} = answers;
+								let sql = `insert into employees (first_name, last_name, role_id, manager_id)
+									values ('${first}', '${last}', '${role}', '${manager}');`;
+								addQuery(sql);
+							});
+						break;
 				}
 				break;
 			case 'update':
@@ -120,6 +157,7 @@ promptUser()	// returns a promise
 				break;
 			default:
 				//do something
+				db.end();
 				break;
 		}
-	})
+	});
