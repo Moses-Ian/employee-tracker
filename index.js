@@ -88,6 +88,13 @@ let chooseDepartmentQuestion = [{
 		choices: []
 }];
 
+let chooseManagerQuestion = [{
+		type: 'list',
+		name: 'manager',
+		message: "Which manager?",
+		choices: []
+}];
+
 let updateRoleQuestion = [
 	{
 		type: 'number',
@@ -152,6 +159,18 @@ const getDepartmentNames = () => {
 	});
 }
 
+const getManagerNames = () => {
+	sql = `select distinct em.first_name, em.last_name
+		from employees e
+		inner join employees em 
+		on e.manager_id = em.id;`;
+	return db.promise().query(sql)
+	.then(results => {
+		const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
+		chooseManagerQuestion[0].choices = names;
+	});
+}
+
 //body
 
 //returns a promise
@@ -206,12 +225,22 @@ promptUser()	// returns a promise
 									on departments.id = roles.department_id
 									inner join employees
 									on roles.id = employees.role_id
-									where departments.name = 'Engineering';`;
+									where departments.name = '${answers.department}';`;
 								getQuery(sql);
 							});
 						break;
 					case 'manager':
-						
+						getManagerNames()
+							.then(() => inquirer.prompt(chooseManagerQuestion))
+							.then(answers => {
+								const [first, last] = answers.manager.split(' ');
+								let sql = `select employees.id, employees.first_name, employees.last_name
+									from employees
+									left join employees em
+									on employees.manager_id = em.id
+									where em.first_name = '${first}' and em.last_name = '${last}';`;
+								getQuery(sql);
+							});
 						break;
 					case 'budget':
 					
