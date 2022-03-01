@@ -1,6 +1,9 @@
 const inquirer = require('inquirer');
 
-//returns a promise
+//connect to mysql database
+const db = require('./db/connection');
+
+/* //returns a promise
 console.log(`You can:
 view all departments
 view all roles
@@ -36,4 +39,4 @@ promptUser()	// returns a promise
 			default:
 				//do something
 		}
-	});
+	}); */
