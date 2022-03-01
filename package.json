@@ -1,0 +1,27 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "track employees",
+  "main": "index.js",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^8.2.0",
+    "mysql2": "^2.3.3"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Moses-Ian/employee-tracker.git"
+  },
+  "author": "Ian Moses",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Moses-Ian/employee-tracker/issues"
+  },
+  "homepage": "https://github.com/Moses-Ian/employee-tracker#readme"
+}
