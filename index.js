@@ -32,7 +32,19 @@ promptUser()	// returns a promise
 		switch(action[0]) {
 			case 'view':
 				//do something
-				const sql = `select * from ${action[2]};`;
+				let sql = `select * from ${action[2]};`;
+				if (action[2] === 'employees') 
+					sql = `select e.id, e.first_name, e.last_name,
+r.title, r.salary,
+d.name as department,
+em.last_name as manager
+from employees e
+left join roles r
+on e.role_id = r.id
+left join departments d
+on r.department_id = d.id
+left join employees em
+on e.manager_id = em.id;`;
 				return db.promise().query(sql);
 				break;
 			case 'add':
