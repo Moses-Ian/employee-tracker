@@ -74,19 +74,34 @@ const addEmployeeQuestions = [
 	}
 ];
 
-let updateEmployeeRoleQuestions = [
-	{
+let chooseEmployeeQuestion = [{
 		type: 'list',
 		name: 'employee',
 		message: "Which employee's role do you want to update?",
 		choices: []
-	}, {
+}];
+
+let updateRoleQuestion = [
+	{
 		type: 'number',
 		name: 'role',
 		message: "What is this employee's new role's ID?",
 		validate: input => {
 			if (isNaN(input)) 
 				return 'Role ID must be a number!';
+			return true;
+		}
+	}
+];
+	
+let updateManagerQuestion = [
+	{
+		type: 'number',
+		name: 'manager',
+		message: "What is this employee's new manager's ID?",
+		validate: input => {
+			if (isNaN(input)) 
+				return 'Manager ID must be a number!';
 			return true;
 		}
 	}
@@ -102,7 +117,14 @@ view all employees
 add department
 add role
 add employee
-update employee role`);
+update employee role
+update employee manager
+view manager
+view department
+view budget
+delete department
+delete role
+delete employee`);
 
 const promptUser = () => {
   return inquirer.prompt(actionQuestion);
@@ -118,7 +140,11 @@ const addQuery = (sql) => {
 
 const getEmployeeNames = () => {
 	sql = `select first_name, last_name from employees;`;
-	return db.promise().query(sql);
+	return db.promise().query(sql)
+	.then(results => {
+		const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
+		chooseEmployeeQuestion[0].choices = names;
+	});
 }
 
 promptUser()	// returns a promise
@@ -179,19 +205,30 @@ promptUser()	// returns a promise
 				break;
 			case 'update':
 				//do something
-				getEmployeeNames()
-					.then(results => {
-						const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
-						updateEmployeeRoleQuestions[0].choices = names;
-						return inquirer.prompt(updateEmployeeRoleQuestions)
-					})
-					.then(answers => {
-						const [first, last] = answers.employee.split(' ');
-						let sql = `update employees
-							set role_id = ${answers.role}
-							where first_name = '${first}' and last_name = '${last}';`;
-						addQuery(sql);
-					});
+				switch (action[2]) {
+					case 'role':
+						getEmployeeNames()
+							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(updateRoleQuestion)))
+							.then(answers => {
+								const [first, last] = answers.employee.split(' ');
+								let sql = `update employees
+									set role_id = ${answers.role}
+									where first_name = '${first}' and last_name = '${last}';`;
+								addQuery(sql);
+							});
+						break;
+					case 'manager':
+						getEmployeeNames()
+							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(updateManagerQuestion)))
+							.then(answers => {
+								const [first, last] = answers.employee.split(' ');
+								let sql = `update employees
+									set manager_id = ${answers.manager}
+									where first_name = '${first}' and last_name = '${last}';`;
+								addQuery(sql);
+							});
+						break;
+				}
 				break;
 			default:
 				//do something

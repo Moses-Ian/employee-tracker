@@ -86,6 +86,11 @@ describe('validate', () => {
 			expect(validate(str)).toBe(true);
 		});
 		
+		test('update employee manager', () => {
+			const str = 'update employee manager'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+		
 		test('update employee rope', () => {
 			const str = 'update employee rope'.trim().toLowerCase().split(' ');
 			expect(validate(str)).toBe(false);

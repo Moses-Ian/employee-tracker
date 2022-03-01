@@ -18,9 +18,11 @@ const validate = action => {
 		case 'update':
 			if (!action[1] || action[1] != 'employee')
 				return false;
-			if (!action[2] || action[2] != 'role')
+			if (!action[2])
 				return false;
-			return true;
+			if (action[2] === 'role' || action[2] === 'manager')
+				return true;
+			return false;
 		default:
 			return false;
 	}
