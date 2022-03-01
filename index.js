@@ -18,6 +18,33 @@ const addDepartmentQuestion = [{
 	message: 'What is the name of the new department?'
 }];
 
+const addRoleQuestions = [
+	{
+		type: 'input',
+		name: 'title',
+		message: 'What is the title of the new role?'
+	}, {
+		type: 'number',
+		name: 'salary',
+		message: 'What is the salary of the new role?',
+		validate: input => {
+			if (isNaN(input)) 
+				return 'Salary must be a number!';
+			return true;
+		}
+	}, {
+		type: 'number',
+		name: 'department',
+		message: 'What is the ID of the department this role belongs to?',
+		validate: input => {
+			if (isNaN(input)) 
+				return 'Department ID must be a number!';
+			return true;
+		}
+	}
+];
+	
+
 //returns a promise
 console.log(`You can:
 view all departments
@@ -76,6 +103,15 @@ promptUser()	// returns a promise
 								let sql = `insert into departments (name) values ('${name}');`;
 								addQuery(sql);
 							})
+						break;
+					case 'role':
+						inquirer.prompt(addRoleQuestions)
+							.then(answers => {
+								let { title, salary, department } = answers;
+								let sql = `insert into roles (title, salary, department_id)
+									values ('${title}', '${salary}', '${department}')`;
+								addQuery(sql);
+							});
 						break;
 				}
 				break;
