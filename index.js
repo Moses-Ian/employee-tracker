@@ -1,4 +1,6 @@
 const inquirer = require('inquirer');
+const { validate } = require('./utils/utils');
+const cTable = require('console.table');
 
 //connect to mysql database
 const db = require('./db/connection');
@@ -25,12 +27,13 @@ promptUser()	// returns a promise
 	.then(answers => {
 		let { action } = answers;
 		action = action.trim().toLowerCase().split(' ');
-		console.log(action);
 		if (!validate(action))
 			return;
 		switch(action[0]) {
 			case 'view':
 				//do something
+				const sql = `select * from ${action[2]};`;
+				return db.promise().query(sql);
 				break;
 			case 'add':
 				//do something
@@ -43,4 +46,5 @@ promptUser()	// returns a promise
 				break;
 		}
 	})
-	.then(db.end());
+	.then(results => console.table(results[0]))	//rows = results[0]
+	.then(() => db.end());
