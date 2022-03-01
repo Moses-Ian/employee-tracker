@@ -73,6 +73,25 @@ const addEmployeeQuestions = [
 		}
 	}
 ];
+
+let updateEmployeeRoleQuestions = [
+	{
+		type: 'list',
+		name: 'employee',
+		message: "Which employee's role do you want to update?",
+		choices: []
+	}, {
+		type: 'number',
+		name: 'role',
+		message: "What is this employee's new role's ID?",
+		validate: input => {
+			if (isNaN(input)) 
+				return 'Role ID must be a number!';
+			return true;
+		}
+	}
+];
+	
 	
 
 //returns a promise
@@ -92,8 +111,14 @@ const promptUser = () => {
 const addQuery = (sql) => {
 	db.promise().query(sql)
 	.then(result => console.log("Query OK"))
-	.catch(err => console.log("Query didn't work (you know what you did)."))
+	// .catch(err => console.log("Query didn't work (you know what you did)."))
+	.catch(err => console.log(err))
 	.then(db.end());
+}
+
+const getEmployeeNames = () => {
+	sql = `select first_name, last_name from employees;`;
+	return db.promise().query(sql);
 }
 
 promptUser()	// returns a promise
@@ -154,6 +179,19 @@ promptUser()	// returns a promise
 				break;
 			case 'update':
 				//do something
+				getEmployeeNames()
+					.then(results => {
+						const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
+						updateEmployeeRoleQuestions[0].choices = names;
+						return inquirer.prompt(updateEmployeeRoleQuestions)
+					})
+					.then(answers => {
+						const [first, last] = answers.employee.split(' ');
+						let sql = `update employees
+							set role_id = ${answers.role}
+							where first_name = '${first}' and last_name = '${last}';`;
+						addQuery(sql);
+					});
 				break;
 			default:
 				//do something
