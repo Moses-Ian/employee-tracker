@@ -243,7 +243,24 @@ promptUser()	// returns a promise
 							});
 						break;
 					case 'budget':
-					
+						getDepartmentNames()
+							.then(() => inquirer.prompt(chooseDepartmentQuestion))
+							.then(answers => {
+								let sql = `select roles.salary
+									from departments
+									inner join roles 
+									on departments.id = roles.department_id
+									inner join employees
+									on roles.id = employees.role_id
+									where departments.name = '${answers.department}';`;
+								db.promise().query(sql)
+									.then(results => {
+										const sum = results[0].reduce((prev, cur) => prev + parseInt(cur.salary), 0);
+										console.log(sum);
+									})
+									.catch(err => console.log(err))
+									.then(db.end());
+							});
 						break;
 				}
 				break;
