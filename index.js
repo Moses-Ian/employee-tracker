@@ -5,6 +5,19 @@ const cTable = require('console.table');
 //connect to mysql database
 const db = require('./db/connection');
 
+//build questions here
+const actionQuestion = [{
+	type: 'input',
+	name: 'action',
+	message: 'What would you like to do?'
+}];
+	
+const addDepartmentQuestion = [{
+	type: 'input',
+	name: 'name',
+	message: 'What is the name of the new department?'
+}];
+
 //returns a promise
 console.log(`You can:
 view all departments
@@ -16,11 +29,16 @@ add employee
 update employee role`);
 
 const promptUser = () => {
-  return inquirer.prompt([{
-		type: 'input',
-		name: 'action',
-		message: 'What would you like to do?'
-	}]);
+  return inquirer.prompt(actionQuestion);
+}
+
+const addQuery = (sql) => {
+	db.promise().query(sql)
+	.then((result, err) => {
+		if (!err)
+			console.log("Query OK")
+	})
+	.then(db.end());
 }
 
 promptUser()	// returns a promise
@@ -31,24 +49,35 @@ promptUser()	// returns a promise
 			return;
 		switch(action[0]) {
 			case 'view':
-				//do something
 				let sql = `select * from ${action[2]};`;
 				if (action[2] === 'employees') 
 					sql = `select e.id, e.first_name, e.last_name,
-r.title, r.salary,
-d.name as department,
-em.last_name as manager
-from employees e
-left join roles r
-on e.role_id = r.id
-left join departments d
-on r.department_id = d.id
-left join employees em
-on e.manager_id = em.id;`;
-				return db.promise().query(sql);
+						r.title, r.salary,
+						d.name as department,
+						em.last_name as manager
+						from employees e
+						left join roles r
+						on e.role_id = r.id
+						left join departments d
+						on r.department_id = d.id
+						left join employees em
+						on e.manager_id = em.id;`;
+				db.promise().query(sql)
+				.then(results => console.table(results[0]))	//rows = results[0]
+				.then(() => db.end());
 				break;
 			case 'add':
 				//do something
+				switch (action[1]) {
+					case 'department':
+						inquirer.prompt(addDepartmentQuestion)
+							.then(answers => {
+								let { name } = answers;
+								let sql = `insert into departments (name) values ('${name}');`;
+								addQuery(sql);
+							})
+						break;
+				}
 				break;
 			case 'update':
 				//do something
@@ -58,5 +87,3 @@ on e.manager_id = em.id;`;
 				break;
 		}
 	})
-	.then(results => console.table(results[0]))	//rows = results[0]
-	.then(() => db.end());

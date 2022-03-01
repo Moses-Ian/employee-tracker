@@ -42,4 +42,54 @@ describe('validate', () => {
 			expect(validate(str)).toBe(false);
 		});
 	});
+	
+	describe('add', () => {
+		test('add department', () => {
+			const str = 'add department'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+	});
+	
+	describe('add', () => {
+		test('add role', () => {
+			const str = 'add role'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+	});
+	
+	describe('add', () => {
+		test('add employee', () => {
+			const str = 'add employee'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+	});
+	
+	describe('add', () => {
+		test('add fart', () => {
+			const str = 'add fart'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(false);
+		});
+	});
+	
+	describe('add', () => {
+		test('add', () => {
+			const str = 'add'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(false);
+		});
+	});
+	
+	describe('add', () => {
+		test('app department', () => {
+			const str = 'app department'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(false);
+		});
+	});
+	
+	describe('add', () => {
+		test('', () => {
+			const str = ''.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(false);
+		});
+	});
+	
 });
