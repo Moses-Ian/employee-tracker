@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 //connect to mysql database
 const db = require('./db/connection');
 
-/* //returns a promise
+//returns a promise
 console.log(`You can:
 view all departments
 view all roles
@@ -26,6 +26,8 @@ promptUser()	// returns a promise
 		let { action } = answers;
 		action = action.trim().toLowerCase().split(' ');
 		console.log(action);
+		if (!validate(action))
+			return;
 		switch(action[0]) {
 			case 'view':
 				//do something
@@ -38,5 +40,7 @@ promptUser()	// returns a promise
 				break;
 			default:
 				//do something
+				break;
 		}
-	}); */
+	})
+	.then(db.end());
