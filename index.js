@@ -322,6 +322,9 @@ promptUser()	// returns a promise
 						break;
 				}
 				break;
+			case 'delete':
+					//do something
+				break;
 			default:
 				//do something
 				db.end();

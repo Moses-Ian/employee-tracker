@@ -119,7 +119,33 @@ describe('validate', () => {
 		test('udate employee role', () => {
 			const str = 'udate employee role'.trim().toLowerCase().split(' ');
 			expect(validate(str)).toBe(false);
+		});	
+	});
+	
+	describe('delete', () => {
+		test('delete department', () => {
+			const str = 'delete department'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
 		});
 		
+		test('delete role', () => {
+			const str = 'delete role'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+		
+		test('delete employee', () => {
+			const str = 'delete employee'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(true);
+		});
+		
+		test('delete nonsense', () => {
+			const str = 'delete nonsense'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(false);
+		});
+		
+		test('delete', () => {
+			const str = 'delete'.trim().toLowerCase().split(' ');
+			expect(validate(str)).toBe(false);
+		});
 	});
 });

@@ -27,6 +27,14 @@ const validate = action => {
 			if (action[2] === 'role' || action[2] === 'manager')
 				return true;
 			return false;
+		
+		case 'delete':
+			if(!action[1])
+				return false;
+			if(action[1] === 'department' || action[1] === 'role' || action[1] === 'employee')
+				return true;
+			return false;
+		
 		default:
 			return false;
 	}
