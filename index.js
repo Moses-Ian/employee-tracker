@@ -44,24 +44,6 @@ const addEmployeeQuestions = [
 		type: 'input',
 		name: 'last',
 		message: 'Last name?'
-	}, {
-		type: 'number',
-		name: 'role',
-		message: 'Role ID?',
-		validate: input => {
-			if (isNaN(input)) 
-				return 'Role ID must be a number!';
-			return true;
-		}
-	}, {
-		type: 'number',
-		name: 'manager',
-		message: 'Manager ID?',
-		validate: input => {
-			if (isNaN(input)) 
-				return 'Manager ID must be a number!';
-			return true;
-		}
 	}
 ];
 
@@ -295,11 +277,19 @@ promptUser()	// returns a promise
 							});
 						break;
 					case 'employee':
-						inquirer.prompt(addEmployeeQuestions)
+						getRoleNames()
+							.then(getManagerNames())
+							.then(() => inquirer.prompt(addEmployeeQuestions.concat(chooseRoleQuestion).concat(chooseManagerQuestion)))
 							.then(answers => {
-								let {first, last, role, manager} = answers;
+								let {first, last, title, manager} = answers;
+								let [managerFirst, managerLast] = manager.split(' ');
 								let sql = `insert into employees (first_name, last_name, role_id, manager_id)
-									values ('${first}', '${last}', '${role}', '${manager}');`;
+									select '${first}', '${last}', roles.id, (
+										select employees.id
+										from employees
+										where first_name = '${managerFirst}' and last_name = '${managerLast}' )
+									from roles
+									where roles.title = '${title}';`;
 								addQuery(sql);
 							});
 						break;
