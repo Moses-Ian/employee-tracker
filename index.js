@@ -50,7 +50,7 @@ const addEmployeeQuestions = [
 let chooseEmployeeQuestion = [{
 		type: 'list',
 		name: 'employee',
-		message: "Which employee's role do you want to update?",
+		message: "Which employee do you want to update?",
 		choices: []
 }];
 
@@ -75,32 +75,6 @@ let chooseManagerQuestion = [{
 		choices: []
 }];
 
-let updateRoleQuestion = [
-	{
-		type: 'number',
-		name: 'role',
-		message: "What is this employee's new role's ID?",
-		validate: input => {
-			if (isNaN(input)) 
-				return 'Role ID must be a number!';
-			return true;
-		}
-	}
-];
-	
-let updateManagerQuestion = [
-	{
-		type: 'number',
-		name: 'manager',
-		message: "What is this employee's new manager's ID?",
-		validate: input => {
-			if (isNaN(input)) 
-				return 'Manager ID must be a number!';
-			return true;
-		}
-	}
-];
-	
 //functions
 const promptUser = () => {
   return inquirer.prompt(actionQuestion);
@@ -300,22 +274,31 @@ promptUser()	// returns a promise
 				switch (action[2]) {
 					case 'role':
 						getEmployeeNames()
-							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(updateRoleQuestion)))
+							.then(getRoleNames())
+							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(chooseRoleQuestion)))
 							.then(answers => {
 								const [first, last] = answers.employee.split(' ');
-								let sql = `update employees
-									set role_id = ${answers.role}
+								let sql = `update employees, (
+										select roles.id
+										from roles
+										where roles.title = '${answers.title}') as src
+									set employees.role_id = src.id
 									where first_name = '${first}' and last_name = '${last}';`;
 								addQuery(sql);
 							});
 						break;
 					case 'manager':
 						getEmployeeNames()
-							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(updateManagerQuestion)))
+							.then(getManagerNames())
+							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(chooseManagerQuestion)))
 							.then(answers => {
 								const [first, last] = answers.employee.split(' ');
-								let sql = `update employees
-									set manager_id = ${answers.manager}
+								const [managerFirst, managerLast] = answers.manager.split(' ');
+								let sql = `update employees, (
+										select employees.id
+										from employees
+										where first_name = '${managerFirst}' and last_name = '${managerLast}') as manager
+									set employees.manager_id = manager.id
 									where first_name = '${first}' and last_name = '${last}';`;
 								addQuery(sql);
 							});
