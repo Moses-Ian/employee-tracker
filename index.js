@@ -32,15 +32,6 @@ const addRoleQuestions = [
 				return 'Salary must be a number!';
 			return true;
 		}
-	}, {
-		type: 'number',
-		name: 'department',
-		message: 'What is the ID of the department this role belongs to?',
-		validate: input => {
-			if (isNaN(input)) 
-				return 'Department ID must be a number!';
-			return true;
-		}
 	}
 ];
 
@@ -292,11 +283,14 @@ promptUser()	// returns a promise
 							})
 						break;
 					case 'role':
-						inquirer.prompt(addRoleQuestions)
+						getDepartmentNames()
+							.then(() =>	inquirer.prompt(addRoleQuestions.concat(chooseDepartmentQuestion)))
 							.then(answers => {
 								let { title, salary, department } = answers;
 								let sql = `insert into roles (title, salary, department_id)
-									values ('${title}', '${salary}', '${department}')`;
+									select '${title}', '${salary}', departments.id
+									from departments
+									where departments.name = '${department}';`;
 								addQuery(sql);
 							});
 						break;
