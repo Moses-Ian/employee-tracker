@@ -88,6 +88,13 @@ let chooseDepartmentQuestion = [{
 		choices: []
 }];
 
+let chooseRoleQuestion = [{
+		type: 'list',
+		name: 'title',
+		message: "Which role?",
+		choices: []
+}];
+
 let chooseManagerQuestion = [{
 		type: 'list',
 		name: 'manager',
@@ -156,6 +163,15 @@ const getDepartmentNames = () => {
 	.then(results => {
 		const names = results[0];
 		chooseDepartmentQuestion[0].choices = names;
+	});
+}
+
+const getRoleNames = () => {
+	sql = `select title from roles;`;
+	return db.promise().query(sql)
+	.then(results => {
+		const titles = results[0];
+		chooseRoleQuestion[0].choices = titles.map(r => r.title);
 	});
 }
 
@@ -324,6 +340,32 @@ promptUser()	// returns a promise
 				break;
 			case 'delete':
 					//do something
+					switch(action[1]) {
+						case 'department':
+							getDepartmentNames()
+							.then(() => inquirer.prompt(chooseDepartmentQuestion))
+							.then(answers => {
+								let sql = `delete from departments where name = '${answers.name}';`;
+								addQuery(sql);
+							});
+							break;
+						case 'role':
+							getRoleNames()
+							.then(() => inquirer.prompt(chooseRoleQuestion))
+							.then(answers => {
+								let sql = `delete from roles where title = '${answers.title}';`;
+								addQuery(sql);
+							});
+							break;
+						case 'employee':
+							getEmployeeNames()
+							.then(() => inquirer.prompt(chooseEmployeeQuestion))
+							.then(answers => {
+								let sql = `delete from employees where first_name = '${answers.first}' and last_name = '${answers.last}';`;
+								addQuery(sql);
+							});
+							break;
+					}
 				break;
 			default:
 				//do something
@@ -331,3 +373,28 @@ promptUser()	// returns a promise
 				break;
 		}
 	});
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
