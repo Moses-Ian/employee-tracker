@@ -37,7 +37,7 @@ Follow this video:
 
 7. To use your password for MySQL Server, Run:
 
-    ```echo <MySQL Server Password> >> mykey.txt```
+    ```echo|set /p="<MySQL Server Password>" > mykey.txt```
 
 8. Run:
 
