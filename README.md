@@ -37,11 +37,11 @@ Follow this video:
 
 7. To use your password for MySQL Server, Run:
 
-    ```echo "<MySQL Server Password>" >> mykey.txt```
+    ```echo <MySQL Server Password> >> mykey.txt```
 
 8. Run:
 
-    ```npm init```
+    ```npm install```
 
 
 ### Running the program:
