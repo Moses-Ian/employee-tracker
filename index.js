@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const { validate } = require('./utils/utils');
 const cTable = require('console.table');
+const queries = require('./utils/queries.js');
 
 //connect to mysql database
 const db = require('./db/connection');
@@ -80,23 +81,23 @@ const promptUser = () => {
   return inquirer.prompt(actionQuestion);
 }
 
-const addQuery = (sql) => {
-	db.promise().query(sql)
+const addQuery = (sql, params) => {
+	db.promise().query(sql, params)
 	.then(result => console.log("Query OK"))
-	// .catch(err => console.log("Query didn't work (you know what you did)."))
-	.catch(err => console.log(err))
+	.catch(err => console.log("Query didn't work (you know what you did)."))
+	// .catch(err => console.log(err))
 	.then(db.end());
 }
 
-const getQuery = (sql) => {
-	db.promise().query(sql)
+const getQuery = (sql, params) => {
+	db.promise().query(sql, params)
 		.then(results => console.table(results[0]))
 		.catch(err => console.log(err))
 		.then(db.end());
 }
 
 const getEmployeeNames = () => {
-	sql = `select first_name, last_name from employees;`;
+	sql = queries.selectEmployeeNames;
 	return db.promise().query(sql)
 	.then(results => {
 		const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
@@ -105,7 +106,7 @@ const getEmployeeNames = () => {
 }
 
 const getDepartmentNames = () => {
-	sql = `select name from departments;`;
+	sql = queries.selectDepartmentNames;
 	return db.promise().query(sql)
 	.then(results => {
 		const names = results[0];
@@ -114,7 +115,7 @@ const getDepartmentNames = () => {
 }
 
 const getRoleNames = () => {
-	sql = `select title from roles;`;
+	sql = queries.selectRoleTitles;
 	return db.promise().query(sql)
 	.then(results => {
 		const titles = results[0];
@@ -123,10 +124,7 @@ const getRoleNames = () => {
 }
 
 const getManagerNames = () => {
-	sql = `select distinct em.first_name, em.last_name
-		from employees e
-		inner join employees em 
-		on e.manager_id = em.id;`;
+	sql = queries.selectManagerNames;
 	return db.promise().query(sql)
 	.then(results => {
 		const names = results[0].map(r => `${r.first_name} ${r.last_name}`);
@@ -165,31 +163,15 @@ promptUser()	// returns a promise
 					case 'all':
 						let sql = `select * from ${action[2]};`;
 						if (action[2] === 'employees') 
-							sql = `select e.id, e.first_name, e.last_name,
-								r.title, r.salary,
-								d.name as department,
-								em.last_name as manager
-								from employees e
-								left join roles r
-								on e.role_id = r.id
-								left join departments d
-								on r.department_id = d.id
-								left join employees em
-								on e.manager_id = em.id;`;
-						getQuery(sql);
+							sql = queries.selectAllEmployees;
+						getQuery(sql, []);
 						break;
 					case 'department':
 						getDepartmentNames()
 							.then(() => inquirer.prompt(chooseDepartmentQuestion))
 							.then(answers => {
-								let sql = `select employees.id, employees.first_name, employees.last_name, roles.title
-									from departments
-									inner join roles 
-									on departments.id = roles.department_id
-									inner join employees
-									on roles.id = employees.role_id
-									where departments.name = '${answers.department}';`;
-								getQuery(sql);
+								let sql = queries.selectAllDepartments;
+								getQuery(sql, [answers.department]);
 							});
 						break;
 					case 'manager':
@@ -197,26 +179,16 @@ promptUser()	// returns a promise
 							.then(() => inquirer.prompt(chooseManagerQuestion))
 							.then(answers => {
 								const [first, last] = answers.manager.split(' ');
-								let sql = `select employees.id, employees.first_name, employees.last_name
-									from employees
-									left join employees em
-									on employees.manager_id = em.id
-									where em.first_name = '${first}' and em.last_name = '${last}';`;
-								getQuery(sql);
+								let sql = queries.selectManager;
+								getQuery(sql, [first, last]);
 							});
 						break;
 					case 'budget':
 						getDepartmentNames()
 							.then(() => inquirer.prompt(chooseDepartmentQuestion))
 							.then(answers => {
-								let sql = `select roles.salary
-									from departments
-									inner join roles 
-									on departments.id = roles.department_id
-									inner join employees
-									on roles.id = employees.role_id
-									where departments.name = '${answers.department}';`;
-								db.promise().query(sql)
+								let sql = queries.selectSalary;
+								db.promise().query(sql, [answers.department])
 									.then(results => {
 										const sum = results[0].reduce((prev, cur) => prev + parseInt(cur.salary), 0);
 										console.log(sum);
@@ -233,9 +205,8 @@ promptUser()	// returns a promise
 					case 'department':
 						inquirer.prompt(addDepartmentQuestion)
 							.then(answers => {
-								let { name } = answers;
-								let sql = `insert into departments (name) values ('${name}');`;
-								addQuery(sql);
+								let sql = queries.addDepartment;
+								addQuery(sql, [answers.name]);
 							})
 						break;
 					case 'role':
@@ -243,11 +214,8 @@ promptUser()	// returns a promise
 							.then(() =>	inquirer.prompt(addRoleQuestions.concat(chooseDepartmentQuestion)))
 							.then(answers => {
 								let { title, salary, department } = answers;
-								let sql = `insert into roles (title, salary, department_id)
-									select '${title}', '${salary}', departments.id
-									from departments
-									where departments.name = '${department}';`;
-								addQuery(sql);
+								let sql = queries.addRole;
+								addQuery(sql, [title, salary, department]);
 							});
 						break;
 					case 'employee':
@@ -257,14 +225,8 @@ promptUser()	// returns a promise
 							.then(answers => {
 								let {first, last, title, manager} = answers;
 								let [managerFirst, managerLast] = manager.split(' ');
-								let sql = `insert into employees (first_name, last_name, role_id, manager_id)
-									select '${first}', '${last}', roles.id, (
-										select employees.id
-										from employees
-										where first_name = '${managerFirst}' and last_name = '${managerLast}' )
-									from roles
-									where roles.title = '${title}';`;
-								addQuery(sql);
+								let sql = queries.addEmployee;
+								addQuery(sql, [first, last, managerFirst, managerLast, title]);
 							});
 						break;
 				}
@@ -278,13 +240,8 @@ promptUser()	// returns a promise
 							.then(() => inquirer.prompt(chooseEmployeeQuestion.concat(chooseRoleQuestion)))
 							.then(answers => {
 								const [first, last] = answers.employee.split(' ');
-								let sql = `update employees, (
-										select roles.id
-										from roles
-										where roles.title = '${answers.title}') as src
-									set employees.role_id = src.id
-									where first_name = '${first}' and last_name = '${last}';`;
-								addQuery(sql);
+								let sql = queries.updateEmployeeRole;
+								addQuery(sql, [answers.title, first, last]);
 							});
 						break;
 					case 'manager':
@@ -294,13 +251,8 @@ promptUser()	// returns a promise
 							.then(answers => {
 								const [first, last] = answers.employee.split(' ');
 								const [managerFirst, managerLast] = answers.manager.split(' ');
-								let sql = `update employees, (
-										select employees.id
-										from employees
-										where first_name = '${managerFirst}' and last_name = '${managerLast}') as manager
-									set employees.manager_id = manager.id
-									where first_name = '${first}' and last_name = '${last}';`;
-								addQuery(sql);
+								let sql = queries.updateEmployeeManager;
+								addQuery(sql, [managerFirst, managerLast, first, last]);
 							});
 						break;
 				}
@@ -312,24 +264,25 @@ promptUser()	// returns a promise
 							getDepartmentNames()
 							.then(() => inquirer.prompt(chooseDepartmentQuestion))
 							.then(answers => {
-								let sql = `delete from departments where name = '${answers.name}';`;
-								addQuery(sql);
+								let sql = queries.deleteDepartment;
+								addQuery(sql, [answers.name]);
 							});
 							break;
 						case 'role':
 							getRoleNames()
 							.then(() => inquirer.prompt(chooseRoleQuestion))
 							.then(answers => {
-								let sql = `delete from roles where title = '${answers.title}';`;
-								addQuery(sql);
+								let sql = queries.deleteRole;
+								addQuery(sql, [answers.title]);
 							});
 							break;
 						case 'employee':
 							getEmployeeNames()
 							.then(() => inquirer.prompt(chooseEmployeeQuestion))
 							.then(answers => {
-								let sql = `delete from employees where first_name = '${answers.first}' and last_name = '${answers.last}';`;
-								addQuery(sql);
+								const [first, last] = answers;
+								let sql = queries.deleteEmployee;
+								addQuery(sql, [first, last]);
 							});
 							break;
 					}
