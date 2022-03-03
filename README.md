@@ -19,23 +19,37 @@ Follow this video:
 1. Clone the repository
 2. From the command line, navigate to the repository directory
 3. Initialize the database with:
-```mysql -u root -p```
+
+    ```mysql -u root -p```
+
 4. Run:
-```source db/db.sql```
-```source db/schema.sql```
+
+    ```source db/db.sql```
+    ```source db/schema.sql```
+
 5. You can seed the database with data by modifying seeds.sql. When you're ready, run:
-```source db/seeds.sql```
+
+    ```source db/seeds.sql```
+
 6. To quit MySQL Server, Run:
-```quit```
+
+    ```quit```
+
 7. To use your password for MySQL Server, Run:
-```echo "<MySQL Server Password>" >> mykey.txt```
+
+    ```echo "<MySQL Server Password>" >> mykey.txt```
+
 8. Run:
-```npm init```
+
+    ```npm init```
+
 
 ### Running the program:
 
 1. From the repository directory, Run:
-```node index```
+
+    ```node index```
+
 2. Answer the questions
 3. To do multiple actions, run the program again.
 
