@@ -8,7 +8,7 @@ This program will help you keep track of your employees, and their roles, depart
 
 Follow this video:
 
-[video]()
+[video](https://watch.screencastify.com/v/oVzcECIMitHbQJQxH19U)
 
 ### Before you begin:
 
